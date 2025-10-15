@@ -123,16 +123,11 @@ where
     }
 }
 
-impl<T, U, V> Drop for SharedRCOTReceiver<T, U, V>
-where
-    U: Copy + Send,
-    V: Copy + Send,
-{
+impl<T, U, V> Drop for SharedRCOTReceiver<T, U, V> {
     fn drop(&mut self) {
         if let Ok(mut state) = self.state.lock() {
             if let Some(buffer) = state.buffers.remove(&self.id) {
                 state.alloc = state.alloc.saturating_sub(buffer.count);
-                drop(buffer);
             }
         }
     }
