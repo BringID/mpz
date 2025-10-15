@@ -121,6 +121,20 @@ where
     }
 }
 
+impl<T, U> Drop for SharedRCOTSender<T, U>
+where
+    U: Copy + Send,
+{
+    fn drop(&mut self) {
+        if let Ok(mut state) = self.state.lock() {
+            if let Some(buffer) = state.buffers.remove(&self.id) {
+                state.alloc = state.alloc.saturating_sub(buffer.count);
+                drop(buffer);
+            }
+        }
+    }
+}
+
 impl<T, U> RCOTSender<U> for SharedRCOTSender<T, U>
 where
     T: RCOTSender<U>,
